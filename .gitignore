@@ -1,0 +1,72 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+# These are often covered by android/.gitignore but good to have redundancy
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+
+# Server specific (Node.js/TypeScript)
+server/node_modules/
+server/dist/
+server/.env
+server/.DS_Store
+server/*.log
+server/coverage/
+
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Build files
+*.dmg
+# If YanNotes.dmg is a build artifact and not source, it should be ignored.
+# If it's something you distribute and want to track, remove the line below.
+YanNotes.dmg
