@@ -3,6 +3,6 @@ export interface User {
   username: string;
   email: string;
   passwordHash: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  created_at?: Date;
+  updated_at?: Date;
 }

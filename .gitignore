@@ -13,6 +13,7 @@ migrate_working_dir/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+node_modules/
 
 # IntelliJ related
 *.iml

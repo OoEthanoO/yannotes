@@ -154,7 +154,9 @@ class _NotePageState extends State<NotePage> {
             AppBar(
               title: const Text('All Notes'),
               automaticallyImplyLeading: false,
-              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest,
             ),
             Expanded(
               child: ListView.builder(
@@ -170,7 +172,6 @@ class _NotePageState extends State<NotePage> {
                     trailing: IconButton(
                       icon: const Icon(Icons.edit_outlined),
                       onPressed: () {
-                        // Close drawer first if open, then show dialog
                         if (Navigator.canPop(context)) {
                           Navigator.pop(context);
                         }
