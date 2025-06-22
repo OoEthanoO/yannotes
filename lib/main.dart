@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yannotes/providers/auth_provider.dart';
+import 'package:yannotes/screens/login_screen.dart';
 
 class Note {
   String title;
@@ -8,7 +11,12 @@ class Note {
 }
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +30,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const NotePage(),
+      home: const LoginScreen(),
     );
   }
 }
@@ -138,81 +146,122 @@ class _NotePageState extends State<NotePage> {
 
   @override
   Widget build(BuildContext context) {
-    String currentTitle = 'YanNotes';
-    if (_selectedNoteIndex >= 0 && _selectedNoteIndex < _notes.length) {
-      currentTitle = _notes[_selectedNoteIndex].title;
-    }
+    return Consumer<AuthProvider>(
+      builder: (context, auth, child) {
+        String currentTitle;
+        if (_selectedNoteIndex >= 0 && _selectedNoteIndex < _notes.length) {
+          currentTitle = _notes[_selectedNoteIndex].title;
+        } else if (auth.isAuthenticated) {
+          currentTitle = auth.user?.username ?? 'YanNotes';
+        } else {
+          currentTitle = 'YanNotes';
+        }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(currentTitle),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            AppBar(
-              title: const Text('All Notes'),
-              automaticallyImplyLeading: false,
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest,
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(currentTitle),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          ),
+          drawer: Drawer(
+            child: Column(
+              children: [
+                AppBar(
+                  title: Text(
+                    auth.isAuthenticated
+                        ? 'Welcome, ${auth.user?.username}'
+                        : 'All Notes',
+                  ),
+                  automaticallyImplyLeading: false,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _notes.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(_notes[index].title),
+                        selected: index == _selectedNoteIndex,
+                        selectedTileColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer.withOpacity(0.5),
+                        onTap: () => _selectNote(index),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          onPressed: () {
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                            _editNoteTitle(index);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.add_circle_outline),
+                  title: const Text('Create New Note'),
+                  onTap: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                    _createNewNote();
+                  },
+                ),
+                if (auth.isAuthenticated)
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Logout'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      auth.logoutUser();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
+                    },
+                  )
+                else
+                  ListTile(
+                    leading: const Icon(Icons.login),
+                    title: const Text('Login'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _notes.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(_notes[index].title),
-                    selected: index == _selectedNoteIndex,
-                    selectedTileColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer.withOpacity(0.5),
-                    onTap: () => _selectNote(index),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit_outlined),
-                      onPressed: () {
-                        if (Navigator.canPop(context)) {
-                          Navigator.pop(context);
-                        }
-                        _editNoteTitle(index);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.add_circle_outline),
-              title: const Text('Create New Note'),
-              onTap: () {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
-                _createNewNote();
-              },
-            ),
-          ],
-        ),
-      ),
-      body: (_selectedNoteIndex == -1 || _notes.isEmpty)
-          ? Center(
-              child: _notes.isEmpty
-                  ? const Text('Create a new note to begin.')
-                  : const Text('Select a note to view or edit.'),
-            )
-          : TextField(
-              controller: _textController,
-              maxLines: null,
-              expands: true,
-              textAlignVertical: TextAlignVertical.top,
-              decoration: const InputDecoration(
-                hintText: 'Start typing your note here...',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16.0),
-              ),
-            ),
+          ),
+          body: (_selectedNoteIndex == -1 || _notes.isEmpty)
+              ? Center(
+                  child: _notes.isEmpty
+                      ? const Text('Create a new note to begin.')
+                      : const Text('Select a note to view or edit.'),
+                )
+              : TextField(
+                  controller: _textController,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: const InputDecoration(
+                    hintText: 'Start typing your note here...',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(16.0),
+                  ),
+                ),
+        );
+      },
     );
   }
 

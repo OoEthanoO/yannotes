@@ -35,6 +35,30 @@ app.post("/register", async (req: Request, res: Response) => {
       .json({ message: "Username, email, and password are required." });
   }
 
+  if (username.length < 3 || username.length > 20) {
+    return res
+      .status(400)
+      .json({ message: "Username must be between 3 and 20 characters." });
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    return res
+      .status(400)
+      .json({
+        message: "Username can only contain letters, numbers, and underscores.",
+      });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: "Invalid email format." });
+  }
+
+  if (password.length < 8) {
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 8 characters long." });
+  }
+
   try {
     const existingUserCheck = await query(
       "SELECT username, email FROM users WHERE username = $1 OR email = $2",
